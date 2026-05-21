@@ -21,6 +21,7 @@ import AiSimulationPage from '../pages/ai/AiSimulationPage';
 import DroneSimulationPage from '../pages/drone/DroneSimulationPage';
 import UploadCenterPage from '../pages/uploads/UploadCenterPage';
 import { ROLES } from '../constants/roles';
+import { ROUTE_ACCESS } from '../constants/roleAccess';
 
 export const router = createBrowserRouter([
   {
@@ -75,15 +76,15 @@ export const router = createBrowserRouter([
           {
             element: <DashboardLayout />,
             children: [
-              { path: '/maps', element: <DisasterMapPage /> },
-              { path: '/chat', element: <ChatPage /> },
-              { path: '/shelters', element: <ShelterPage /> },
-              { path: '/missing-persons', element: <MissingPersonsPage /> },
-              { path: '/resources', element: <ResourcesPage /> },
-              { path: '/alerts', element: <AlertsPage /> },
-              { path: '/ai', element: <AiSimulationPage /> },
-              { path: '/drone', element: <DroneSimulationPage /> },
-              { path: '/uploads', element: <UploadCenterPage /> }
+              { path: '/maps', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/maps']} />, children: [{ index: true, element: <DisasterMapPage /> }] },
+              { path: '/chat', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/chat']} />, children: [{ index: true, element: <ChatPage /> }] },
+              { path: '/shelters', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/shelters']} />, children: [{ index: true, element: <ShelterPage /> }] },
+              { path: '/missing-persons', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/missing-persons']} />, children: [{ index: true, element: <MissingPersonsPage /> }] },
+              { path: '/resources', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/resources']} />, children: [{ index: true, element: <ResourcesPage /> }] },
+              { path: '/alerts', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/alerts']} />, children: [{ index: true, element: <AlertsPage /> }] },
+              { path: '/ai', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/ai']} />, children: [{ index: true, element: <AiSimulationPage /> }] },
+              { path: '/drone', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/drone']} />, children: [{ index: true, element: <DroneSimulationPage /> }] },
+              { path: '/uploads', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/uploads']} />, children: [{ index: true, element: <UploadCenterPage /> }] }
             ]
           }
         ]

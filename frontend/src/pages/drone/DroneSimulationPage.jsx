@@ -11,13 +11,14 @@ import {
   ShieldAlert,
   Terminal,
   Wifi,
-  Eye,
   Crosshair,
   Map as MapIcon,
   Search,
-  ChevronRight
+  ChevronRight,
+  Minus,
+  Plus
 } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import PageHeader from '../../components/common/PageHeader';
@@ -34,13 +35,96 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Helper component to update map view
 function MapUpdater({ center, zoom }) {
   const map = useMap();
   useEffect(() => {
-    map.setView(center, zoom, { animate: true, duration: 1 });
-  }, [center, zoom, map]);
+    map.flyTo(center, zoom, { animate: true, duration: 1.25 });
+  }, [center, map]);
+  useEffect(() => {
+    if (map.getZoom() !== zoom) {
+      map.setZoom(zoom);
+    }
+  }, [zoom, map]);
   return null;
+}
+
+function DroneMapEvents({ onPlaceDrone }) {
+  useMapEvents({
+    click(event) {
+      onPlaceDrone([event.latlng.lat, event.latlng.lng]);
+    },
+  });
+  return null;
+}
+
+const MIN_MAP_ZOOM = 3;
+const MAX_MAP_ZOOM = 18;
+
+const coordinatePattern = /@?(-?\d{1,2}(?:\.\d+)?)[,\s]+(-?\d{1,3}(?:\.\d+)?)/;
+
+function parseCoordinates(query) {
+  const match = query.match(coordinatePattern);
+  if (!match) return null;
+
+  const lat = Number(match[1]);
+  const lng = Number(match[2]);
+  if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+
+  return [lat, lng];
+}
+
+function cleanSearchQuery(query) {
+  return query
+    .trim()
+    .replace(/^https?:\/\/\S+/i, (url) => {
+      try {
+        return decodeURIComponent(new URL(url).pathname.split('/').filter(Boolean).join(' '));
+      } catch {
+        return url;
+      }
+    })
+    .replace(/\s+/g, ' ');
+}
+
+function getSearchCandidates(query) {
+  const cleanedQuery = cleanSearchQuery(query) || query.trim();
+  const normalized = cleanedQuery.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const candidates = [cleanedQuery];
+
+  if (/\b(meeca|meca|mekka|mecca|makkah|kaaba|haram)\b/.test(normalized)) {
+    candidates.push(
+      'Mecca Saudi Arabia',
+      'Makkah Saudi Arabia',
+      'Masjid al-Haram Makkah Saudi Arabia',
+    );
+  }
+
+  if (!/\b(india|usa|united states|saudi arabia|uae|dubai|uk|canada|australia)\b/.test(normalized)) {
+    candidates.push(`${cleanedQuery} city`, `${cleanedQuery} landmark`);
+  }
+
+  return [...new Set(candidates.filter(Boolean))];
+}
+
+function getKnownPlaceFallback(query) {
+  const normalized = query.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (/\b(meeca|meca|mekka|mecca|makkah|kaaba|haram)\b/.test(normalized)) {
+    return {
+      coords: [21.422487, 39.826206],
+      label: 'Masjid al-Haram, Mecca / Makkah, Saudi Arabia',
+    };
+  }
+  return null;
+}
+
+function formatNominatimResult(result) {
+  return result.display_name || [result.name, result.type, result.address?.city, result.address?.country].filter(Boolean).join(', ');
+}
+
+function formatPhotonResult(feature) {
+  const props = feature.properties || {};
+  return [props.name, props.street, props.city, props.state, props.country].filter(Boolean).join(', ');
 }
 
 const DroneSimulationPage = () => {
@@ -54,12 +138,28 @@ const DroneSimulationPage = () => {
   
   // Geolocation State
   const [searchQuery, setSearchQuery] = useState('');
+  const [targetAddress, setTargetAddress] = useState('Current browser location');
   const [currentPos, setCurrentPos] = useState([19.0760, 72.8777]); 
   const [dronePos, setDronePos] = useState([19.0760, 72.8777]);
-  const [zoom, setZoom] = useState(13);
+  const [zoom, setZoom] = useState(16);
   const [isSearching, setIsSearching] = useState(false);
   
   const timerRef = useRef(null);
+
+  const zoomIn = () => {
+    setZoom((currentZoom) => Math.min(MAX_MAP_ZOOM, currentZoom + 1));
+  };
+
+  const zoomOut = () => {
+    setZoom((currentZoom) => Math.max(MIN_MAP_ZOOM, currentZoom - 1));
+  };
+
+  const placeDroneAt = (coords, label = 'Selected map location') => {
+    setCurrentPos(coords);
+    setDronePos(coords);
+    setTargetAddress(label);
+    addLog(`Drone set to: ${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}`);
+  };
 
   const waypoints = [
     { name: 'Launchpad Delta', action: 'Takeoff', alt: 120 },
@@ -78,8 +178,7 @@ const DroneSimulationPage = () => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition((position) => {
         const { latitude, longitude } = position.coords;
-        setCurrentPos([latitude, longitude]);
-        setDronePos([latitude, longitude]);
+        placeDroneAt([latitude, longitude], 'Current browser location');
         addLog(`Initial GPS Lock: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
       });
     }
@@ -87,26 +186,79 @@ const DroneSimulationPage = () => {
 
   const handleSearch = async (e) => {
     if (e) e.preventDefault();
-    if (!searchQuery) return;
+    const rawQuery = searchQuery.trim();
+    if (!rawQuery) return;
     
     setIsSearching(true);
-    addLog(`Searching for target zone: "${searchQuery}"...`);
+    addLog(`Searching for target zone: "${rawQuery}"...`);
     
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
-      const data = await response.json();
-      
-      if (data && data.length > 0) {
-        const { lat, lon, display_name } = data[0];
-        const newCoords = [parseFloat(lat), parseFloat(lon)];
-        setCurrentPos(newCoords);
-        setDronePos(newCoords);
-        setZoom(16);
-        addLog(`Target Found: ${display_name.split(',').slice(0,2).join(',')}`);
+      const parsedCoords = parseCoordinates(rawQuery);
+      if (parsedCoords) {
+        placeDroneAt(parsedCoords, `Coordinates: ${parsedCoords[0].toFixed(6)}, ${parsedCoords[1].toFixed(6)}`);
+        setZoom(17);
+        addLog('Target Found: coordinates detected from search.');
         addLog(`Relocating drone to target coordinates.`);
-      } else {
-        addLog('ERROR: Target location not found.');
+        return;
       }
+
+      const searchCandidates = getSearchCandidates(rawQuery);
+
+      for (const candidate of searchCandidates) {
+        const nominatimParams = new URLSearchParams({
+          format: 'jsonv2',
+          q: candidate,
+          limit: '5',
+          addressdetails: '1',
+          dedupe: '1',
+          namedetails: '1',
+          'accept-language': 'en',
+        });
+        const nominatimResponse = await fetch(`https://nominatim.openstreetmap.org/search?${nominatimParams.toString()}`);
+        const nominatimData = nominatimResponse.ok ? await nominatimResponse.json() : [];
+        const nominatimMatch = nominatimData.find((item) => item.lat && item.lon);
+
+        if (nominatimMatch) {
+          const newCoords = [parseFloat(nominatimMatch.lat), parseFloat(nominatimMatch.lon)];
+          const label = formatNominatimResult(nominatimMatch);
+          placeDroneAt(newCoords, label);
+          setSearchQuery(label);
+          setZoom(17);
+          addLog(`Target Found: ${label}`);
+          addLog(`Relocating drone to target coordinates.`);
+          return;
+        }
+      }
+
+      for (const candidate of searchCandidates) {
+        const photonParams = new URLSearchParams({ q: candidate, limit: '5', lang: 'en' });
+        const photonResponse = await fetch(`https://photon.komoot.io/api/?${photonParams.toString()}`);
+        const photonData = photonResponse.ok ? await photonResponse.json() : { features: [] };
+        const photonMatch = photonData.features?.find((feature) => feature.geometry?.coordinates?.length >= 2);
+
+        if (photonMatch) {
+          const [lng, lat] = photonMatch.geometry.coordinates;
+          const label = formatPhotonResult(photonMatch) || candidate;
+          placeDroneAt([lat, lng], label);
+          setSearchQuery(label);
+          setZoom(17);
+          addLog(`Target Found: ${label}`);
+          addLog(`Relocating drone to target coordinates.`);
+          return;
+        }
+      }
+
+      const knownPlace = getKnownPlaceFallback(rawQuery);
+      if (knownPlace) {
+        placeDroneAt(knownPlace.coords, knownPlace.label);
+        setSearchQuery(knownPlace.label);
+        setZoom(17);
+        addLog(`Target Found: ${knownPlace.label}`);
+        addLog(`Relocating drone to target coordinates.`);
+        return;
+      }
+
+      addLog('ERROR: Target location not found. Try adding city, state, or country.');
     } catch (error) {
       addLog('ERROR: Connection to satellite database failed.');
     } finally {
@@ -117,7 +269,7 @@ const DroneSimulationPage = () => {
   const handleLaunch = () => {
     if (status !== 'Standby') return;
     setStatus('Launching');
-    setZoom(18); // Zoom in for mission
+    setZoom(MAX_MAP_ZOOM); // Closest reliable satellite mission detail
     addLog('Initiating launch sequence...');
     
     timerRef.current = setInterval(() => {
@@ -181,7 +333,7 @@ const DroneSimulationPage = () => {
     setDistance(0);
     setActiveWaypoint(0);
     setDronePos(currentPos);
-    setZoom(16);
+    setZoom(17);
     setLogs(['[SYSTEM] Ready for new mission at target location.']);
   };
 
@@ -190,7 +342,7 @@ const DroneSimulationPage = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <PageHeader 
           title="Target Reconnaissance" 
-          description="High-precision satellite drone scouting. Search for any area globally and initiate tactical reconnaissance." 
+          description="Search any location worldwide, set the drone there, and inspect the surrounding satellite map freely." 
         />
         <div className="flex gap-3">
           <button onClick={handleReset} className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all active:scale-95">
@@ -221,7 +373,7 @@ const DroneSimulationPage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Enter target location (e.g. Mumbai, New York, or specific address)..."
-              className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+              className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm text-slate-950 placeholder:text-slate-400 caret-slate-950 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
             />
           </form>
         </div>
@@ -230,7 +382,7 @@ const DroneSimulationPage = () => {
           disabled={isSearching}
           className="w-full md:w-auto px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-black transition-all active:scale-95 disabled:opacity-50"
         >
-          {isSearching ? 'Locating...' : 'Set Target'}
+          {isSearching ? 'Locating...' : 'Set Drone'}
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
@@ -238,35 +390,99 @@ const DroneSimulationPage = () => {
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={Plane} label="Drone Link" value={status} tone={status === 'Surveying' ? 'indigo' : 'slate'} />
         <StatCard icon={BatteryCharging} label="Battery" value={`${battery.toFixed(1)}%`} tone={battery < 20 ? 'danger' : 'indigo'} />
-        <StatCard icon={MapIcon} label="Target Lock" value={searchQuery ? 'Custom' : 'Local'} helper={`${dronePos[0].toFixed(3)}, ${dronePos[1].toFixed(3)}`} tone="indigo" />
+        <StatCard icon={MapIcon} label="Target Lock" value={searchQuery ? 'Custom' : 'Local'} helper={`${dronePos[0].toFixed(5)}, ${dronePos[1].toFixed(5)}`} tone="indigo" />
         <StatCard icon={Wifi} label="Link Strength" value="98.4dB" tone="indigo" />
       </div>
 
       <div className="grid gap-8 xl:grid-cols-[1fr_380px]">
         <div className="space-y-6">
+          <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex min-w-0 items-start gap-3">
+                <MapIcon className="mt-0.5 h-5 w-5 flex-none text-indigo-600" />
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Complete Target Location</p>
+                  <p className="mt-1 text-sm font-semibold leading-6 text-slate-900">{targetAddress}</p>
+                </div>
+              </div>
+              <div className="flex flex-none items-center gap-2">
+                <button
+                  type="button"
+                  onClick={zoomOut}
+                  disabled={zoom <= MIN_MAP_ZOOM}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 shadow-sm transition-all hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Zoom out"
+                  title="Zoom out"
+                >
+                  <Minus className="h-5 w-5" />
+                </button>
+                <div className="min-w-20 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-xs font-black text-slate-900">
+                  {zoom}x
+                </div>
+                <button
+                  type="button"
+                  onClick={zoomIn}
+                  disabled={zoom >= MAX_MAP_ZOOM}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-900 text-white shadow-sm transition-all hover:bg-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Zoom in"
+                  title="Zoom in"
+                >
+                  <Plus className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-black rounded-[40px] p-2 h-[550px] relative overflow-hidden border-4 border-slate-800 shadow-2xl">
             
             <MapContainer 
               center={dronePos} 
               zoom={zoom} 
-              className="h-full w-full rounded-[32px] overflow-hidden grayscale-[30%] brightness-[0.9] contrast-[1.1]"
-              zoomControl={false}
-              dragging={false}
-              touchZoom={false}
-              doubleClickZoom={false}
-              scrollWheelZoom={false}
+              minZoom={MIN_MAP_ZOOM}
+              maxZoom={MAX_MAP_ZOOM}
+              className="h-full w-full rounded-[32px] overflow-hidden"
+              zoomControl={true}
+              dragging={true}
+              touchZoom={true}
+              doubleClickZoom={true}
+              scrollWheelZoom={true}
             >
               <TileLayer
-                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                attribution='Tiles &copy; Esri'
+                url="https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                attribution="Satellite imagery &copy; Esri"
+                maxZoom={MAX_MAP_ZOOM}
+                maxNativeZoom={MAX_MAP_ZOOM}
+              />
+              <TileLayer
+                url="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}"
+                attribution="Routes &copy; Esri"
+                maxZoom={MAX_MAP_ZOOM}
+                maxNativeZoom={MAX_MAP_ZOOM}
+                opacity={0.8}
+              />
+              <TileLayer
+                url="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+                attribution="Labels &copy; Esri"
+                maxZoom={MAX_MAP_ZOOM}
+                maxNativeZoom={MAX_MAP_ZOOM}
+                opacity={0.9}
               />
               <MapUpdater center={dronePos} zoom={zoom} />
-              <Marker position={dronePos} />
+              <DroneMapEvents onPlaceDrone={placeDroneAt} />
+              <Marker position={dronePos}>
+                <Popup>
+                  <strong>Target location</strong>
+                  <br />
+                  {targetAddress}
+                  <br />
+                  {dronePos[0].toFixed(6)}, {dronePos[1].toFixed(6)}
+                </Popup>
+              </Marker>
             </MapContainer>
 
             <div className="absolute inset-0 pointer-events-none z-10">
-              <div className="absolute inset-0 border-[40px] border-black/30 backdrop-blur-[0.5px]" />
-              <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_50%,rgba(0,0,0,0.4)_100%)]" />
+              <div className="absolute inset-0 border-[40px] border-black/25" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_58%,rgba(0,0,0,0.28)_100%)]" />
               
               {status === 'Surveying' && (
                 <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/10 via-transparent to-indigo-500/10 animate-pulse" />

@@ -2,6 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { ROUTES } from '../constants/routes';
 import { useAuth } from '../hooks/useAuth';
 import { getDefaultRouteForRole } from '../utils/roleRedirect';
+import { normalizeRole } from '../constants/roleAccess';
 
 export default function ProtectedRoute({ allowedRoles = [] }) {
   const { accessToken, bootstrapped, status, user } = useAuth();
@@ -14,8 +15,10 @@ export default function ProtectedRoute({ allowedRoles = [] }) {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-    return <Navigate to={getDefaultRouteForRole(user.role)} replace />;
+  const role = normalizeRole(user.role);
+
+  if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
+    return <Navigate to={getDefaultRouteForRole(role)} replace />;
   }
 
   return <Outlet />;

@@ -24,19 +24,20 @@ import {
 } from 'lucide-react';
 import { ROUTES } from '../constants/routes';
 import { ROLES } from '../constants/roles';
+import { ROLE_LABELS, canAccessRoute, normalizeRole } from '../constants/roleAccess';
 import { logout } from '../redux/features/auth/authSlice';
 
 const links = [
-  { label: 'Victim', to: ROUTES.VICTIM_DASHBOARD, icon: Home, roles: [ROLES.VICTIM] },
-  { label: 'Authority', to: ROUTES.ADMIN_DASHBOARD, icon: Shield, roles: [ROLES.AUTHORITY, ROLES.ADMIN] },
-  { label: 'Helper', to: ROUTES.HELPER_DASHBOARD, icon: LifeBuoy, roles: [ROLES.HELPER] },
-  { label: 'SOS', to: ROUTES.SOS, icon: Siren, roles: [ROLES.VICTIM] },
+  { label: 'Victim', to: ROUTES.VICTIM_DASHBOARD, icon: Home },
+  { label: 'Authority', to: ROUTES.ADMIN_DASHBOARD, icon: Shield },
+  { label: 'Helper', to: ROUTES.HELPER_DASHBOARD, icon: LifeBuoy },
+  { label: 'SOS', to: ROUTES.SOS, icon: Siren },
   { label: 'Map', to: ROUTES.MAPS, icon: Map },
   { label: 'Chat', to: ROUTES.CHAT, icon: MessageCircle },
   { label: 'Shelters', to: ROUTES.SHELTERS, icon: Warehouse },
   { label: 'Missing', to: ROUTES.MISSING_PERSONS, icon: Search },
   { label: 'Resources', to: ROUTES.RESOURCES, icon: Package },
-  { label: 'Analytics', to: ROUTES.ANALYTICS, icon: BarChart3, roles: [ROLES.AUTHORITY, ROLES.ADMIN] },
+  { label: 'Analytics', to: ROUTES.ANALYTICS, icon: BarChart3 },
   { label: 'Alerts', to: ROUTES.ALERTS, icon: AlertTriangle },
   { label: 'AI', to: ROUTES.AI, icon: Bot },
   { label: 'Drone', to: ROUTES.DRONE, icon: Plane },
@@ -47,11 +48,13 @@ export default function DashboardLayout() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const visibleLinks = links.filter((link) => !link.roles || link.roles.includes(user?.role));
+  const role = normalizeRole(user?.role);
+  const roleLabel = ROLE_LABELS[role] || 'Responder';
+  const visibleLinks = links.filter((link) => canAccessRoute(role, link.to));
 
   return (
     <div className="min-h-screen bg-slate-100">
-      <Sidebar links={visibleLinks} onLogout={() => dispatch(logout())} user={user} />
+      <Sidebar links={visibleLinks} onLogout={() => dispatch(logout())} roleLabel={roleLabel} user={user} />
 
       {isMobileOpen && (
         <div className="fixed inset-0 z-40 bg-slate-950/40 lg:hidden" onClick={() => setIsMobileOpen(false)}>
@@ -76,7 +79,7 @@ export default function DashboardLayout() {
               </button>
               <div>
                 <p className="text-sm font-semibold text-slate-950">Disaster response command workspace</p>
-                <p className="text-xs text-slate-500">Live operations - Secure session - {user?.role || 'responder'}</p>
+                <p className="text-xs text-slate-500">Live operations - Secure session - {roleLabel}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -86,7 +89,7 @@ export default function DashboardLayout() {
               </button>
               <div className="hidden rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-right sm:block">
                 <p className="text-sm font-semibold text-slate-900">{user?.name || 'Responder'}</p>
-                <p className="text-xs capitalize text-slate-500">{user?.role || 'secure session'}</p>
+                <p className="text-xs text-slate-500">{roleLabel}</p>
               </div>
             </div>
           </div>
@@ -99,7 +102,7 @@ export default function DashboardLayout() {
   );
 }
 
-function Sidebar({ links, onLogout, user }) {
+function Sidebar({ links, onLogout, roleLabel, user }) {
   return (
     <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-slate-200 bg-white p-5 lg:flex lg:flex-col">
       <Brand />
@@ -112,12 +115,12 @@ function Sidebar({ links, onLogout, user }) {
             </div>
             <div>
               <p className="text-sm font-bold text-slate-900">{user?.name || 'Responder'}</p>
-              <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">{user?.role || 'secure session'}</p>
+              <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">{roleLabel || 'Secure session'}</p>
             </div>
           </div>
         </div>
 
-        {user?.role === ROLES.VICTIM && (
+        {normalizeRole(user?.role) === ROLES.VICTIM && (
           <NavLink 
             to={ROUTES.SOS}
             className="mb-6 flex w-full items-center justify-center gap-3 rounded-xl bg-red-600 px-4 py-3.5 text-sm font-black text-white shadow-lg shadow-red-200 hover:bg-red-700 transition-all hover:scale-[1.02] active:scale-[0.98]"

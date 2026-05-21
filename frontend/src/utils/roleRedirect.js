@@ -1,8 +1,9 @@
 import { ROLES } from '../constants/roles';
 import { ROUTES } from '../constants/routes';
+import { normalizeRole } from '../constants/roleAccess';
 
 export function getDefaultRouteForRole(role) {
-  switch (role) {
+  switch (normalizeRole(role)) {
     case ROLES.AUTHORITY:
     case ROLES.ADMIN:
       return ROUTES.ADMIN_DASHBOARD;
