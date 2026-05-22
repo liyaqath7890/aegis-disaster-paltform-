@@ -1,18 +1,38 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearAuthError, demoLogin, login, register } from '../../redux/features/auth/authSlice';
+import { clearAuthError, login, register } from '../../redux/features/auth/authSlice';
 import { ROUTES } from '../../constants/routes';
 import { getDefaultRouteForRole } from '../../utils/roleRedirect';
-import { AlertTriangle, Eye, EyeOff, LifeBuoy, Shield, Siren, User, Zap } from 'lucide-react';
+import { AlertTriangle, Eye, EyeOff, LifeBuoy, Shield, Siren } from 'lucide-react';
 
 const initialForm = { name: '', email: '', password: '', role: 'victim' };
 
-const DEMO_ROLES = [
-  { role: 'victim',    label: 'Victim',    icon: LifeBuoy,      color: 'bg-white/5 hover:bg-indigo-600/20 text-indigo-300 border border-indigo-500/20' },
-  { role: 'helper',    label: 'Helper',    icon: User,          color: 'bg-white/5 hover:bg-indigo-600/20 text-indigo-300 border border-indigo-500/20' },
-  { role: 'authority', label: 'Authority', icon: Shield,        color: 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30' },
-  { role: 'admin',     label: 'Admin',     icon: Zap,           color: 'bg-white/5 hover:bg-indigo-600/20 text-indigo-300 border border-indigo-500/20' },
+const roleOptions = [
+  {
+    role: 'victim',
+    label: 'Victim',
+    description: 'I need shelter, alerts, and rescue support.',
+    icon: LifeBuoy
+  },
+  {
+    role: 'helper',
+    label: 'Helper',
+    description: 'I coordinate resources, volunteers, and field response.',
+    icon: Shield
+  },
+  {
+    role: 'authority',
+    label: 'Authority',
+    description: 'I manage alerts, analytics, and response coordination.',
+    icon: Siren
+  },
+  {
+    role: 'admin',
+    label: 'Admin',
+    description: 'I oversee platform operations and system health.',
+    icon: AlertTriangle
+  }
 ];
 
 export default function AuthForm({ mode = 'login' }) {
@@ -21,8 +41,18 @@ export default function AuthForm({ mode = 'login' }) {
   const { error, status, user } = useSelector((state) => state.auth);
   const [form, setForm] = useState(initialForm);
   const [showPw, setShowPw] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(mode === 'register' ? 'victim' : null);
   const isRegister = mode === 'register';
   const isLoading  = status === 'loading';
+  const selectedRoleLabel = roleOptions.find((option) => option.role === selectedRole)?.label || 'Selected role';
+
+  useEffect(() => {
+    if (isRegister) {
+      setSelectedRole('victim');
+    } else {
+      setSelectedRole(null);
+    }
+  }, [isRegister]);
 
   useEffect(() => { dispatch(clearAuthError()); }, [dispatch, mode]);
   useEffect(() => {
@@ -34,11 +64,12 @@ export default function AuthForm({ mode = 'login' }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(isRegister ? register(form) : login({ email: form.email, password: form.password }));
+    dispatch(
+      isRegister
+        ? register(form)
+        : login({ email: form.email, password: form.password, role: selectedRole })
+    );
   };
-
-  const handleDemo = (role) =>
-    dispatch(demoLogin({ id: `demo-${role}`, name: `Demo ${role.charAt(0).toUpperCase() + role.slice(1)}`, email: `${role}@demo.aegis`, role }));
 
   return (
     <div className="min-h-screen flex bg-slate-950">
@@ -109,111 +140,135 @@ export default function AuthForm({ mode = 'login' }) {
             </div>
           )}
 
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            {isRegister && (
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Full Name</label>
-                <input
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white/10 transition-all placeholder:text-slate-600"
-                  name="name"
-                  onChange={handleChange}
-                  placeholder="Your full name"
-                  required
-                  value={form.name}
-                />
-              </div>
-            )}
-
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Email</label>
-              <input
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white/10 transition-all placeholder:text-slate-600"
-                name="email"
-                onChange={handleChange}
-                placeholder="name@example.com"
-                required
-                type="email"
-                value={form.email}
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Password</label>
-              <div className="relative">
-                <input
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white/10 transition-all placeholder:text-slate-600"
-                  minLength={isRegister ? 8 : 1}
-                  name="password"
-                  onChange={handleChange}
-                  placeholder={isRegister ? 'At least 8 characters' : '••••••••'}
-                  required
-                  type={showPw ? 'text' : 'password'}
-                  value={form.password}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw((p) => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
-                >
-                  {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+          {!isRegister && !selectedRole ? (
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
+                <div className="mb-6">
+                  <h2 className="text-2xl font-black text-white">Select your role first</h2>
+                  <p className="text-sm text-slate-400">Choose the role that matches your account before signing in.</p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {roleOptions.map(({ role, label, description, icon: Icon }) => (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => setSelectedRole(role)}
+                      className="rounded-3xl border border-slate-700 bg-slate-950/90 p-4 text-left transition-all hover:border-indigo-500 hover:bg-slate-900"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-white">{label}</p>
+                          <p className="text-xs text-slate-400">{description}</p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-
-            {isRegister && (
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Role</label>
-                <select
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white/10 transition-all"
-                  name="role"
-                  onChange={handleChange}
-                  value={form.role}
-                >
-                  <option value="victim">Victim / Civilian</option>
-                  <option value="helper">Helper / NGO Volunteer</option>
-                  <option value="authority">Authority / Government</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-            )}
-
-            <button
-              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl py-3.5 text-sm transition-all hover:shadow-lg hover:shadow-indigo-600/30 mt-2"
-              disabled={isLoading}
-              type="submit"
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
-                    <path fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" className="opacity-75" />
-                  </svg>
-                  Please wait…
-                </span>
-              ) : isRegister ? 'Create Account' : 'Sign In to Aegis'}
-            </button>
-          </form>
-
-          {/* Demo Access */}
-          {!isRegister && (
-            <div className="mt-6 rounded-2xl border border-white/5 bg-white/[0.03] p-5">
-              <p className="text-center text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">
-                Demo Access — No database required
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {DEMO_ROLES.map(({ role, label, icon: Icon, color }) => (
+          ) : (
+            <>
+              {!isRegister && (
+                <div className="mb-4 rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-200">
+                  Signing in as <span className="font-semibold text-white">{selectedRoleLabel}</span>.{' '}
                   <button
-                    key={role}
-                    className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold transition-all ${color}`}
-                    onClick={() => handleDemo(role)}
                     type="button"
+                    onClick={() => setSelectedRole(null)}
+                    className="font-semibold text-indigo-300 hover:text-indigo-200"
                   >
-                    <Icon className="h-3.5 w-3.5" />
-                    {label}
+                    Change role
                   </button>
-                ))}
-              </div>
-            </div>
+                </div>
+              )}
+
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                {isRegister && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Full Name</label>
+                    <input
+                      className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white/10 transition-all placeholder:text-slate-600"
+                      name="name"
+                      onChange={handleChange}
+                      placeholder="Your full name"
+                      required
+                      value={form.name}
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Email</label>
+                  <input
+                    className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white/10 transition-all placeholder:text-slate-600"
+                    name="email"
+                    onChange={handleChange}
+                    placeholder="name@example.com"
+                    required
+                    type="email"
+                    value={form.email}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Password</label>
+                  <div className="relative">
+                    <input
+                      className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white/10 transition-all placeholder:text-slate-600"
+                      minLength={isRegister ? 8 : 1}
+                      name="password"
+                      onChange={handleChange}
+                      placeholder={isRegister ? 'At least 8 characters' : '••••••••'}
+                      required
+                      type={showPw ? 'text' : 'password'}
+                      value={form.password}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPw((p) => !p)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                    >
+                      {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {isRegister && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Role</label>
+                    <select
+                      className="w-full bg-white text-slate-900 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
+                      name="role"
+                      onChange={handleChange}
+                      value={form.role}
+                    >
+                      <option value="victim">Victim / Civilian</option>
+                      <option value="helper">Helper / NGO Volunteer</option>
+                      <option value="authority">Authority / Government</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                )}
+
+                <button
+                  className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl py-3.5 text-sm transition-all hover:shadow-lg hover:shadow-indigo-600/30 mt-2"
+                  disabled={isLoading}
+                  type="submit"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                        <path fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" className="opacity-75" />
+                      </svg>
+                      Please wait…
+                    </span>
+                  ) : isRegister ? 'Create Account' : 'Sign In to Aegis'}
+                </button>
+              </form>
+            </>
           )}
 
           <p className="mt-6 text-center text-sm text-slate-500">
