@@ -120,6 +120,20 @@ function Sidebar({ links, onLogout, roleLabel, user }) {
           </div>
         </div>
 
+        <div className="mb-6 rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 shadow-sm">
+          <div className="mb-3 flex items-center gap-2 text-slate-900">
+            <LifeBuoy className="h-4 w-4 text-indigo-600" />
+            <span className="font-semibold">Quick help</span>
+          </div>
+          <p className="mb-3 text-xs uppercase tracking-[0.18em] text-slate-400">How AEGIS works</p>
+          <ul className="space-y-2 text-xs leading-5">
+            <li className="rounded-xl bg-white p-3">Register and login to start using the dashboard.</li>
+            <li className="rounded-xl bg-white p-3">Victims can send SOS, track shelters, and get alerts.</li>
+            <li className="rounded-xl bg-white p-3">Helpers coordinate resources, accept missions, and update availability.</li>
+            <li className="rounded-xl bg-white p-3">Authorities review alerts, analytics, and manage field response.</li>
+          </ul>
+        </div>
+
         {normalizeRole(user?.role) === ROLES.VICTIM && (
           <NavLink 
             to={ROUTES.SOS}
