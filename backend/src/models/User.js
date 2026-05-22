@@ -23,6 +23,15 @@ export const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false
     },
+    emailVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    verificationToken: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     role: {
       type: DataTypes.ENUM('victim', 'authority', 'helper', 'admin'),
       defaultValue: 'victim'

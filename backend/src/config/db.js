@@ -11,7 +11,7 @@ export async function connectDatabase() {
     await sequelize.authenticate();
 
     if (env.dbSync) {
-      await sequelize.sync();
+      await sequelize.sync({ alter: true });
     }
 
     console.log('PostgreSQL connected');

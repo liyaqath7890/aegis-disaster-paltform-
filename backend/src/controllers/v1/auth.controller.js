@@ -1,12 +1,17 @@
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { sendSuccess } from '../../utils/apiResponse.js';
 import { env } from '../../config/env.js';
-import { loginUser, refreshAuthSession, registerUser, revokeAuthSession } from '../../services/auth.service.js';
+import { loginUser, refreshAuthSession, registerUser, revokeAuthSession, verifyEmailToken } from '../../services/auth.service.js';
 
 export const register = asyncHandler(async (req, res) => {
   const data = await registerUser(req.validated.body, getRequestContext(req));
   setRefreshCookie(res, data.refreshToken);
-  sendSuccess(res, { user: data.user, accessToken: data.accessToken }, 'Registered successfully', 201);
+  sendSuccess(
+    res,
+    { user: data.user, accessToken: data.accessToken, verificationToken: data.verificationToken },
+    'Registered successfully',
+    201
+  );
 });
 
 export const login = asyncHandler(async (req, res) => {
@@ -17,6 +22,11 @@ export const login = asyncHandler(async (req, res) => {
 
 export const me = asyncHandler(async (req, res) => {
   sendSuccess(res, { user: req.user }, 'Current user loaded');
+});
+
+export const verifyEmail = asyncHandler(async (req, res) => {
+  const user = await verifyEmailToken(req.validated.query.token);
+  sendSuccess(res, { user }, 'Email verified successfully');
 });
 
 export const refresh = asyncHandler(async (req, res) => {
@@ -41,8 +51,9 @@ function getRequestContext(req) {
 function setRefreshCookie(res, refreshToken) {
   res.cookie(env.refreshCookieName, refreshToken, {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
     secure: env.nodeEnv === 'production',
+    path: '/',
     maxAge: 30 * 24 * 60 * 60 * 1000
   });
 }
@@ -50,7 +61,8 @@ function setRefreshCookie(res, refreshToken) {
 function clearRefreshCookie(res) {
   res.clearCookie(env.refreshCookieName, {
     httpOnly: true,
-    sameSite: 'lax',
-    secure: env.nodeEnv === 'production'
+    sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
+    secure: env.nodeEnv === 'production',
+    path: '/'
   });
 }

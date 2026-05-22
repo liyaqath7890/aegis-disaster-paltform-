@@ -14,9 +14,23 @@ export const app = express();
 
 app.use(helmet());
 app.use(securityHeaders);
+const allowedOrigins = [
+  ...(Array.isArray(env.clientOrigin) ? env.clientOrigin : [env.clientOrigin]),
+  'http://localhost:5180',
+  'http://127.0.0.1:5180'
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: [env.clientOrigin, 'http://localhost:5180', 'http://127.0.0.1:5180'],
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+      if (env.allowAnyOrigin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      callback(new Error(`CORS policy blocked origin: ${origin}`));
+    },
     credentials: true
   })
 );

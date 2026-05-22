@@ -2,10 +2,19 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const parseOrigins = (value, fallback) => {
+  const origins = (value || fallback).split(',').map((origin) => origin.trim()).filter(Boolean);
+  return origins.length ? origins : [];
+};
+
+const nodeEnv = process.env.NODE_ENV || 'development';
+const allowAnyOrigin = !process.env.CLIENT_ORIGIN && nodeEnv === 'production';
+
 export const env = {
-  nodeEnv: process.env.NODE_ENV || 'development',
+  nodeEnv,
+  allowAnyOrigin,
   port: Number(process.env.PORT || 5000),
-  clientOrigin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+  clientOrigin: parseOrigins(process.env.CLIENT_ORIGIN, allowAnyOrigin ? '' : 'http://localhost:5173'),
   databaseUrl: process.env.DATABASE_URL || '',
   dbSsl: process.env.DB_SSL === 'true',
   dbSync: process.env.DB_SYNC !== 'false',

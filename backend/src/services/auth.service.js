@@ -5,6 +5,10 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../helper
 
 const REFRESH_TOKEN_TTL_DAYS = 30;
 
+function generateVerificationToken() {
+  return crypto.randomBytes(24).toString('hex');
+}
+
 export async function registerUser(payload, context = {}) {
   const existing = await User.findOne({ where: { email: payload.email } });
   if (existing) {
@@ -14,14 +18,22 @@ export async function registerUser(payload, context = {}) {
   }
 
   const passwordHash = await bcrypt.hash(payload.password, 12);
+  const verificationToken = generateVerificationToken();
+
   const user = await User.create({
     name: payload.name,
     email: payload.email,
     role: payload.role,
-    passwordHash
+    passwordHash,
+    emailVerified: false,
+    verificationToken
   });
 
-  return createAuthSession(user, context);
+  const result = await createAuthSession(user, context);
+  return {
+    ...result,
+    verificationToken
+  };
 }
 
 export async function loginUser({ email, password }, context = {}) {
@@ -35,6 +47,24 @@ export async function loginUser({ email, password }, context = {}) {
   }
 
   return createAuthSession(user, context);
+}
+
+export async function verifyEmailToken(token) {
+  if (!token) {
+    const error = new Error('Email verification token is required');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const user = await User.findOne({ where: { verificationToken: token } });
+  if (!user) {
+    const error = new Error('Invalid or expired verification token');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  await user.update({ emailVerified: true, verificationToken: null });
+  return sanitizeUser(user);
 }
 
 export async function refreshAuthSession(refreshToken, context = {}) {
@@ -109,5 +139,6 @@ function addDays(date, days) {
 function sanitizeUser(user) {
   const json = user.toJSON();
   delete json.passwordHash;
+  delete json.verificationToken;
   return json;
 }
