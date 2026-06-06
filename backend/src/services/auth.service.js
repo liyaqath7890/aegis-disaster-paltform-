@@ -36,13 +36,19 @@ export async function registerUser(payload, context = {}) {
   };
 }
 
-export async function loginUser({ email, password }, context = {}) {
+export async function loginUser({ email, password, role }, context = {}) {
   const user = await User.findOne({ where: { email } });
   const isValid = user ? await bcrypt.compare(password, user.passwordHash) : false;
 
   if (!isValid) {
     const error = new Error('Invalid email or password');
     error.statusCode = 401;
+    throw error;
+  }
+
+  if (role && user.role !== role) {
+    const error = new Error(`This account is registered as ${user.role}. Please choose the correct role.`);
+    error.statusCode = 403;
     throw error;
   }
 

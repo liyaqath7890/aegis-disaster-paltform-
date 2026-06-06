@@ -12,7 +12,8 @@ export const registerSchema = z.object({
 export const loginSchema = z.object({
   body: z.object({
     email: z.string().email(),
-    password: z.string().min(1)
+    password: z.string().min(1),
+    role: z.enum(['victim', 'authority', 'admin', 'helper']).optional()
   })
 });
 
