@@ -1,6 +1,16 @@
 import { io } from 'socket.io-client';
 
-export const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
+function trimTrailingSlash(value) {
+  return value ? value.replace(/\/+$/, '') : value;
+}
+
+const socketUrl =
+  trimTrailingSlash(import.meta.env.VITE_SOCKET_URL) ||
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000'
+    : trimTrailingSlash(window.location.origin));
+
+export const socket = io(socketUrl, {
   autoConnect: false,
   transports: ['websocket']
 });

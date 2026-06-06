@@ -26,30 +26,30 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-slate-950 text-white overflow-x-hidden">
       {/* ── HERO ── */}
-      <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+      <header className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 text-center sm:px-6">
         {/* background glow */}
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-950 via-slate-950 to-slate-900" />
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-indigo-600/10 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-red-600/5 blur-3xl pointer-events-none" />
 
         {/* top nav */}
-        <nav className="absolute top-0 left-0 right-0 flex items-center justify-between px-8 py-5 z-10">
-          <div className="flex items-center gap-3">
+        <nav className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between gap-3 px-4 py-5 sm:px-8">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <div className="h-9 w-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
               <Shield className="text-white h-5 w-5" />
             </div>
-            <span className="text-xl font-black text-white tracking-wide">AEGIS</span>
+            <span className="text-lg font-black tracking-wide text-white sm:text-xl">AEGIS</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Link
               to={ROUTES.LOGIN}
-              className="px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-colors"
+              className="px-2 py-2 text-sm font-semibold text-slate-300 transition-colors hover:text-white sm:px-4"
             >
               Sign In
             </Link>
             <Link
               to={ROUTES.REGISTER}
-              className="px-4 py-2 text-sm font-bold bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-colors shadow-lg"
+              className="rounded-xl bg-indigo-600 px-3 py-2 text-sm font-bold shadow-lg transition-colors hover:bg-indigo-500 sm:px-4"
             >
               Get Access
             </Link>
@@ -65,35 +65,35 @@ export default function HomePage() {
             </span>
           </div>
 
-          <h1 className="text-6xl md:text-8xl font-black leading-none tracking-tight mb-6">
+          <h1 className="mb-6 text-4xl font-black leading-tight tracking-tight sm:text-6xl md:text-8xl md:leading-none">
             <span className="text-white">Rescue. </span>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">Respond. </span>
             <span className="text-white">Recover.</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed mb-10">
+          <p className="mx-auto mb-10 max-w-3xl text-base leading-relaxed text-slate-400 md:text-xl">
             Aegis is a real-time disaster management command platform. Coordinate SOS, map danger zones, 
             manage shelters, dispatch rescue teams, and run AI-powered risk analysis — all in one workspace.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
             <Link
               to={ROUTES.REGISTER}
-              className="flex items-center gap-2 px-8 py-4 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-bold text-lg shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105"
+              className="flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-6 py-4 text-base font-bold shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 hover:bg-indigo-500 sm:px-8 sm:text-lg"
             >
               <Zap className="h-5 w-5" />
               Launch Platform
             </Link>
             <Link
               to={ROUTES.LOGIN}
-              className="flex items-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-semibold text-lg transition-all"
+              className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-base font-semibold transition-all hover:bg-white/10 sm:px-8 sm:text-lg"
             >
               Sign In
             </Link>
           </div>
 
           {/* stats strip */}
-          <div className="mt-16 grid grid-cols-3 gap-6 max-w-lg mx-auto text-center">
+          <div className="mx-auto mt-12 grid max-w-lg grid-cols-1 gap-4 text-center sm:mt-16 sm:grid-cols-3 sm:gap-6">
             {[
               { value: 'Real-Time', label: 'SOS Alerts' },
               { value: 'AI-Powered', label: 'Risk Scoring' },
@@ -115,10 +115,10 @@ export default function HomePage() {
       </header>
 
       {/* ── ROLES ── */}
-      <section className="py-24 px-6 bg-slate-900/50">
-        <div className="max-w-5xl mx-auto text-center mb-14">
+      <section className="bg-slate-900/50 px-4 py-16 sm:px-6 sm:py-24">
+        <div className="mx-auto mb-10 max-w-5xl text-center sm:mb-14">
           <p className="text-indigo-400 text-xs font-black uppercase tracking-widest mb-3">Role-Based Access</p>
-          <h2 className="text-4xl font-black text-white">One platform, three command roles</h2>
+          <h2 className="text-3xl font-black text-white sm:text-4xl">One platform, three command roles</h2>
         </div>
         <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-6">
           {roles.map((r) => (
@@ -137,10 +137,10 @@ export default function HomePage() {
       </section>
 
       {/* ── FEATURES ── */}
-      <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto text-center mb-14">
+      <section className="px-4 py-16 sm:px-6 sm:py-24">
+        <div className="mx-auto mb-10 max-w-5xl text-center sm:mb-14">
           <p className="text-indigo-400 text-xs font-black uppercase tracking-widest mb-3">Platform Capabilities</p>
-          <h2 className="text-4xl font-black text-white">Everything you need in a crisis</h2>
+          <h2 className="text-3xl font-black text-white sm:text-4xl">Everything you need in a crisis</h2>
         </div>
         <div className="max-w-5xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {features.map((f) => (
@@ -159,16 +159,16 @@ export default function HomePage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-24 px-6">
-        <div className="max-w-3xl mx-auto text-center bg-gradient-to-br from-indigo-600/20 to-violet-600/10 border border-indigo-500/20 rounded-3xl p-16">
+      <section className="px-4 py-16 sm:px-6 sm:py-24">
+        <div className="mx-auto max-w-3xl rounded-3xl border border-indigo-500/20 bg-gradient-to-br from-indigo-600/20 to-violet-600/10 p-6 text-center sm:p-10 lg:p-16">
           <AlertTriangle className="h-12 w-12 text-indigo-400 mx-auto mb-6" />
-          <h2 className="text-4xl font-black text-white mb-4">Every second matters.</h2>
+          <h2 className="mb-4 text-3xl font-black text-white sm:text-4xl">Every second matters.</h2>
           <p className="text-slate-400 mb-8 leading-relaxed">
             Join the platform built for real-world disaster response. Activate now and coordinate the rescue.
           </p>
           <Link
             to={ROUTES.REGISTER}
-            className="inline-flex items-center gap-2 px-10 py-4 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-bold text-lg shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-6 py-4 text-base font-bold shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 hover:bg-indigo-500 sm:w-auto sm:px-10 sm:text-lg"
           >
             <Zap className="h-5 w-5" />
             Activate Aegis

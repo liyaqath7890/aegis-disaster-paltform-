@@ -338,20 +338,20 @@ const DroneSimulationPage = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
         <PageHeader 
           title="Target Reconnaissance" 
           description="Search any location worldwide, set the drone there, and inspect the surrounding satellite map freely." 
         />
-        <div className="flex gap-3">
-          <button onClick={handleReset} className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all active:scale-95">
+        <div className="flex w-full gap-3 sm:w-auto">
+          <button onClick={handleReset} className="rounded-2xl border border-slate-200 bg-white p-3 text-slate-600 transition-all hover:bg-slate-50 active:scale-95">
             <RotateCcw className="w-5 h-5" />
           </button>
           <button 
             onClick={handleLaunch}
             disabled={status !== 'Standby'}
-            className={`px-8 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-xl ${
+            className={`flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-3 font-bold shadow-xl transition-all sm:flex-none sm:px-8 ${
               status === 'Standby' 
                 ? 'bg-indigo-600 text-white shadow-indigo-200 hover:bg-indigo-700 active:scale-95' 
                 : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
@@ -364,7 +364,7 @@ const DroneSimulationPage = () => {
       </div>
 
       {/* Target Search Bar */}
-      <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-4">
+      <div className="flex flex-col items-center gap-4 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4 md:flex-row">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
           <form onSubmit={handleSearch}>
@@ -373,14 +373,14 @@ const DroneSimulationPage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Enter target location (e.g. Mumbai, New York, or specific address)..."
-              className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm text-slate-950 placeholder:text-slate-400 caret-slate-950 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+              className="w-full rounded-2xl border border-slate-100 bg-slate-50 py-4 pl-12 pr-4 text-sm text-slate-950 caret-slate-950 transition-all placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </form>
         </div>
         <button 
           onClick={handleSearch}
           disabled={isSearching}
-          className="w-full md:w-auto px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-black transition-all active:scale-95 disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-8 py-4 text-sm font-bold text-white transition-all hover:bg-black active:scale-95 disabled:opacity-50 md:w-auto"
         >
           {isSearching ? 'Locating...' : 'Set Drone'}
           <ChevronRight className="w-4 h-4" />
@@ -394,9 +394,9 @@ const DroneSimulationPage = () => {
         <StatCard icon={Wifi} label="Link Strength" value="98.4dB" tone="indigo" />
       </div>
 
-      <div className="grid gap-8 xl:grid-cols-[1fr_380px]">
+      <div className="grid gap-6 xl:grid-cols-[1fr_380px] xl:gap-8">
         <div className="space-y-6">
-          <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
+          <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex min-w-0 items-start gap-3">
                 <MapIcon className="mt-0.5 h-5 w-5 flex-none text-indigo-600" />
@@ -405,7 +405,7 @@ const DroneSimulationPage = () => {
                   <p className="mt-1 text-sm font-semibold leading-6 text-slate-900">{targetAddress}</p>
                 </div>
               </div>
-              <div className="flex flex-none items-center gap-2">
+              <div className="flex w-full flex-none items-center gap-2 sm:w-auto">
                 <button
                   type="button"
                   onClick={zoomOut}
@@ -416,7 +416,7 @@ const DroneSimulationPage = () => {
                 >
                   <Minus className="h-5 w-5" />
                 </button>
-                <div className="min-w-20 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-xs font-black text-slate-900">
+                <div className="min-w-20 flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-xs font-black text-slate-900 sm:flex-none">
                   {zoom}x
                 </div>
                 <button
@@ -433,14 +433,14 @@ const DroneSimulationPage = () => {
             </div>
           </div>
 
-          <div className="bg-black rounded-[40px] p-2 h-[550px] relative overflow-hidden border-4 border-slate-800 shadow-2xl">
+          <div className="relative h-[420px] overflow-hidden rounded-3xl border-4 border-slate-800 bg-black p-1.5 shadow-2xl sm:h-[550px] sm:rounded-[40px] sm:p-2">
             
             <MapContainer 
               center={dronePos} 
               zoom={zoom} 
               minZoom={MIN_MAP_ZOOM}
               maxZoom={MAX_MAP_ZOOM}
-              className="h-full w-full rounded-[32px] overflow-hidden"
+              className="h-full w-full overflow-hidden rounded-2xl sm:rounded-[32px]"
               zoomControl={true}
               dragging={true}
               touchZoom={true}
@@ -481,7 +481,7 @@ const DroneSimulationPage = () => {
             </MapContainer>
 
             <div className="absolute inset-0 pointer-events-none z-10">
-              <div className="absolute inset-0 border-[40px] border-black/25" />
+               <div className="absolute inset-0 border-[18px] border-black/25 sm:border-[40px]" />
               <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_58%,rgba(0,0,0,0.28)_100%)]" />
               
               {status === 'Surveying' && (
@@ -489,40 +489,40 @@ const DroneSimulationPage = () => {
               )}
 
               <div className="absolute inset-0 flex items-center justify-center">
-                <Crosshair className={`w-20 h-20 text-white/40 transition-all ${status === 'Surveying' ? 'scale-110' : 'scale-100'}`} />
+                <Crosshair className={`h-14 w-14 text-white/40 transition-all sm:h-20 sm:w-20 ${status === 'Surveying' ? 'scale-110' : 'scale-100'}`} />
               </div>
 
-              <div className="absolute top-10 left-10 right-10 flex justify-between items-start font-mono">
-                <div className="bg-black/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 flex gap-8 shadow-2xl text-white">
+              <div className="absolute left-4 right-4 top-4 flex items-start justify-between gap-3 font-mono sm:left-10 sm:right-10 sm:top-10">
+                <div className="flex gap-3 rounded-2xl border border-white/10 bg-black/70 p-3 text-white shadow-2xl backdrop-blur-xl sm:gap-8 sm:p-5">
                   <div>
                     <p className="text-[10px] font-black text-indigo-400 uppercase mb-1">ALT</p>
-                    <p className="text-2xl font-bold">{altitude}m</p>
+                    <p className="text-base font-bold sm:text-2xl">{altitude}m</p>
                   </div>
-                  <div className="w-px h-10 bg-white/10" />
+                  <div className="h-10 w-px bg-white/10" />
                   <div>
                     <p className="text-[10px] font-black text-indigo-400 uppercase mb-1">SPD</p>
-                    <p className="text-2xl font-bold">{speed.toFixed(1)}<span className="text-xs text-slate-400">km/h</span></p>
+                    <p className="text-base font-bold sm:text-2xl">{speed.toFixed(1)}<span className="text-xs text-slate-400">km/h</span></p>
                   </div>
-                  <div className="w-px h-10 bg-white/10" />
-                  <div>
+                  <div className="hidden h-10 w-px bg-white/10 sm:block" />
+                  <div className="hidden sm:block">
                     <p className="text-[10px] font-black text-indigo-400 uppercase mb-1">DST</p>
                     <p className="text-2xl font-bold">{distance.toFixed(2)}<span className="text-xs text-slate-400">km</span></p>
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-3">
-                  <div className="bg-indigo-600 px-4 py-2 rounded-full text-[10px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-2 shadow-lg shadow-indigo-900/50">
+                <div className="flex flex-col items-end gap-2 sm:gap-3">
+                  <div className="flex items-center gap-2 rounded-full bg-indigo-600 px-3 py-2 text-[9px] font-black uppercase tracking-wide text-white shadow-lg shadow-indigo-900/50 sm:px-4 sm:text-[10px] sm:tracking-[0.2em]">
                     <div className={`w-2 h-2 bg-white rounded-full ${status === 'Surveying' ? 'animate-pulse' : 'opacity-50'}`} />
                     Tactical Feed
                   </div>
-                  <div className="bg-black/60 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 text-white text-[10px] font-bold">
+                  <div className="hidden rounded-xl border border-white/10 bg-black/60 px-3 py-2 text-[10px] font-bold text-white backdrop-blur-md sm:block">
                     HD: 4K RES
                   </div>
                 </div>
               </div>
 
-              <div className="absolute bottom-10 right-10">
-                <div className="relative w-24 h-24 border-2 border-indigo-500/20 rounded-full flex items-center justify-center bg-black/40 overflow-hidden">
+              <div className="absolute bottom-5 right-5 sm:bottom-10 sm:right-10">
+                <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-indigo-500/20 bg-black/40 sm:h-24 sm:w-24">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent animate-spin duration-[4000ms]" />
                   <Target className="w-6 h-6 text-indigo-400 opacity-60" />
                 </div>
@@ -577,8 +577,8 @@ const DroneSimulationPage = () => {
           </div>
         </div>
 
-        <div className="bg-slate-950 rounded-3xl border border-slate-800 shadow-2xl p-8 flex flex-col h-[750px]">
-          <div className="flex items-center gap-2 mb-8 text-indigo-500">
+        <div className="flex h-[460px] flex-col rounded-3xl border border-slate-800 bg-slate-950 p-4 shadow-2xl sm:h-[600px] sm:p-6 xl:h-[750px] xl:p-8">
+          <div className="mb-5 flex items-center gap-2 text-indigo-500 sm:mb-8">
             <Terminal className="w-5 h-5" />
             <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Satellite Command Console</h3>
           </div>
@@ -593,7 +593,7 @@ const DroneSimulationPage = () => {
             ))}
           </div>
 
-          <div className="mt-8 pt-8 border-t border-slate-800">
+          <div className="mt-5 border-t border-slate-800 pt-5 sm:mt-8 sm:pt-8">
             <p className="text-[9px] text-slate-600 italic text-center font-bold tracking-widest">
               SYSTEM CONNECTED TO GLOBAL SAT-NET
             </p>

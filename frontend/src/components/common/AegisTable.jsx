@@ -32,8 +32,8 @@ const AegisTable = ({
   });
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:shadow-md">
-      <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
+      <div className="flex flex-col items-start justify-between gap-4 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:p-6">
         <div>
           <h2 className="text-xl font-bold text-slate-900">{title}</h2>
           <p className="text-sm text-slate-500 mt-1">Manage and monitor live operational data.</p>
@@ -51,7 +51,7 @@ const AegisTable = ({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full min-w-[760px] border-collapse text-left">
           <thead>
             <tr className="bg-slate-50/50">
               {columns.map((col) => (
@@ -82,7 +82,7 @@ const AegisTable = ({
                   </td>
                 ))}
                 <td className="px-6 py-4 text-right">
-                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex justify-end gap-2 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                     {onWhatsApp && (
                       <>
                         <button 

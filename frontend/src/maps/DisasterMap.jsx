@@ -10,7 +10,7 @@ const route = [
 
 export default function DisasterMap() {
   return (
-    <MapContainer center={center} zoom={13} className="h-[620px] rounded-lg border border-slate-200">
+    <MapContainer center={center} zoom={13} className="h-[420px] rounded-lg border border-slate-200 sm:h-[520px] lg:h-[620px]">
       <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
       {shelters.map((shelter) => (

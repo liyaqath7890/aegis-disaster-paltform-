@@ -206,11 +206,12 @@ const ChatbotPanel = () => {
     }, 800);
   };
 
-  const panelWidth  = isExpanded ? 'w-[520px]' : 'w-96';
-  const panelHeight = isExpanded ? 'h-[640px]' : 'h-[520px]';
+  const panelSize = isExpanded
+    ? 'h-[min(640px,calc(100vh-7rem))] w-[calc(100vw-2rem)] sm:w-[520px]'
+    : 'h-[min(520px,calc(100vh-7rem))] w-[calc(100vw-2rem)] sm:w-96';
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-4 right-4 z-50 flex max-w-[calc(100vw-2rem)] flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -218,7 +219,7 @@ const ChatbotPanel = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ duration: 0.2 }}
-            className={`${panelWidth} ${panelHeight} bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden transition-all duration-300`}
+            className={`${panelSize} flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-300`}
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3 flex items-center justify-between text-white shrink-0">
