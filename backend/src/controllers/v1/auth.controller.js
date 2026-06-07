@@ -5,7 +5,7 @@ import { loginUser, refreshAuthSession, registerUser, revokeAuthSession, verifyE
 
 export const register = asyncHandler(async (req, res) => {
   const data = await registerUser(req.validated.body, getRequestContext(req));
-  setRefreshCookie(res, data.refreshToken);
+  setRefreshCookie(req, res, data.refreshToken);
   sendSuccess(
     res,
     { user: data.user, accessToken: data.accessToken, verificationToken: data.verificationToken },
@@ -16,7 +16,7 @@ export const register = asyncHandler(async (req, res) => {
 
 export const login = asyncHandler(async (req, res) => {
   const data = await loginUser(req.validated.body, getRequestContext(req));
-  setRefreshCookie(res, data.refreshToken);
+  setRefreshCookie(req, res, data.refreshToken);
   sendSuccess(res, { user: data.user, accessToken: data.accessToken }, 'Logged in successfully');
 });
 
@@ -31,13 +31,13 @@ export const verifyEmail = asyncHandler(async (req, res) => {
 
 export const refresh = asyncHandler(async (req, res) => {
   const data = await refreshAuthSession(req.cookies?.[env.refreshCookieName], getRequestContext(req));
-  setRefreshCookie(res, data.refreshToken);
+  setRefreshCookie(req, res, data.refreshToken);
   sendSuccess(res, { user: data.user, accessToken: data.accessToken }, 'Session refreshed');
 });
 
 export const logout = asyncHandler(async (req, res) => {
   await revokeAuthSession(req.cookies?.[env.refreshCookieName]);
-  clearRefreshCookie(res);
+  clearRefreshCookie(req, res);
   sendSuccess(res, null, 'Logged out successfully');
 });
 
@@ -48,21 +48,26 @@ function getRequestContext(req) {
   };
 }
 
-function setRefreshCookie(res, refreshToken) {
+function setRefreshCookie(req, res, refreshToken) {
+  // Use HTTPS-aware cookie flags to avoid refresh/session breakage behind proxies/vercel.
+  const isSecure = Boolean(req.secure) || req.headers['x-forwarded-proto'] === 'https';
+
   res.cookie(env.refreshCookieName, refreshToken, {
     httpOnly: true,
-    sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
-    secure: env.nodeEnv === 'production',
+    sameSite: isSecure ? 'none' : 'lax',
+    secure: isSecure,
     path: '/',
     maxAge: 30 * 24 * 60 * 60 * 1000
   });
 }
 
-function clearRefreshCookie(res) {
+function clearRefreshCookie(req, res) {
+  const isSecure = Boolean(req.secure) || req.headers['x-forwarded-proto'] === 'https';
+
   res.clearCookie(env.refreshCookieName, {
     httpOnly: true,
-    sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
-    secure: env.nodeEnv === 'production',
+    sameSite: isSecure ? 'none' : 'lax',
+    secure: isSecure,
     path: '/'
   });
 }
