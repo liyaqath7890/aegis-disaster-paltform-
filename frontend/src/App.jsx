@@ -26,7 +26,10 @@ export default function App() {
       return;
     }
 
-    dispatch(refreshSession());
+    // If refresh fails (e.g., cookie blocked in some deployments), avoid an infinite redirect loop.
+    dispatch(refreshSession()).unwrap().catch(() => {
+      dispatch(setBootstrapped(true));
+    });
   }, [accessToken, bootstrapped, dispatch]);
 
   useEffect(() => {
