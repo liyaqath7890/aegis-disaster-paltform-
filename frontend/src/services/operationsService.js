@@ -7,6 +7,7 @@ export const operationsService = {
   createResource: (payload) => httpClient.post('/resources', payload),
   listMissingPersons: () => httpClient.get('/missing-persons'),
   createMissingPerson: (payload) => httpClient.post('/missing-persons', payload),
+  updateMissingPersonStatus: (id, status) => httpClient.patch(`/missing-persons/${id}/status`, { status }),
   listAlerts: () => httpClient.get('/alerts'),
   publishAlert: (payload) => httpClient.post('/alerts', payload),
   getAnalytics: () => httpClient.get('/analytics'),
