@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+﻿import { createBrowserRouter } from 'react-router-dom';
 import App from '../App';
 import PublicLayout from '../layouts/PublicLayout';
 import DashboardLayout from '../layouts/DashboardLayout';
@@ -20,6 +20,7 @@ import AlertsPage from '../pages/alerts/AlertsPage';
 import AiSimulationPage from '../pages/ai/AiSimulationPage';
 import DroneSimulationPage from '../pages/drone/DroneSimulationPage';
 import UploadCenterPage from '../pages/uploads/UploadCenterPage';
+import ReportsPage from '../pages/reports/ReportsPage';
 import { ROLES } from '../constants/roles';
 import { ROUTE_ACCESS } from '../constants/roleAccess';
 
@@ -84,7 +85,8 @@ export const router = createBrowserRouter([
               { path: '/alerts', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/alerts']} />, children: [{ index: true, element: <AlertsPage /> }] },
               { path: '/ai', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/ai']} />, children: [{ index: true, element: <AiSimulationPage /> }] },
               { path: '/drone', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/drone']} />, children: [{ index: true, element: <DroneSimulationPage /> }] },
-              { path: '/uploads', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/uploads']} />, children: [{ index: true, element: <UploadCenterPage /> }] }
+              { path: '/uploads', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/uploads']} />, children: [{ index: true, element: <UploadCenterPage /> }] },
+              { path: '/reports', element: <ProtectedRoute allowedRoles={ROUTE_ACCESS['/reports']} />, children: [{ index: true, element: <ReportsPage /> }] },
             ]
           }
         ]
@@ -92,3 +94,6 @@ export const router = createBrowserRouter([
     ]
   }
 ]);
+
+
+

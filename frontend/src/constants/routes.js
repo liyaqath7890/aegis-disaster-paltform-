@@ -1,4 +1,4 @@
-export const ROUTES = {
+﻿export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
   REGISTER: '/register',
@@ -15,5 +15,7 @@ export const ROUTES = {
   ALERTS: '/alerts',
   AI: '/ai',
   DRONE: '/drone',
-  UPLOADS: '/uploads'
+  UPLOADS: '/uploads',
+  REPORTS: '/reports'
 };
+

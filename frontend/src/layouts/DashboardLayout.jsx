@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   AlertTriangle, BarChart3, Bell, Bot, CloudUpload,
   Home, LifeBuoy, LogOut, Map, Menu, MessageCircle,
-  Package, Plane, Search, Shield, Siren, Users, Warehouse, X, ChevronRight
+  Package, Plane, Search, Shield, Siren, FileText, Warehouse, X, ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ROUTES } from '../constants/routes';
@@ -23,6 +23,7 @@ const ALL_LINKS = [
   { label: 'Missing',    to: ROUTES.MISSING_PERSONS,  icon: Search        },
   { label: 'Resources',  to: ROUTES.RESOURCES,        icon: Package       },
   { label: 'Analytics',  to: ROUTES.ANALYTICS,        icon: BarChart3     },
+  { label: 'Reports',    to: ROUTES.REPORTS,          icon: FileText      },
   { label: 'Alerts',     to: ROUTES.ALERTS,           icon: AlertTriangle },
   { label: 'AI',         to: ROUTES.AI,               icon: Bot           },
   { label: 'Drone',      to: ROUTES.DRONE,            icon: Plane         },
@@ -76,7 +77,7 @@ export default function DashboardLayout() {
   return (
     <div className="min-h-screen bg-slate-100">
 
-      {/* ── DESKTOP SIDEBAR ── */}
+      {/* â”€â”€ DESKTOP SIDEBAR â”€â”€ */}
       <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-slate-200 bg-white lg:flex lg:flex-col z-30 shadow-sm">
         <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100">
           <div className="h-10 w-10 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200 shrink-0">
@@ -112,9 +113,9 @@ export default function DashboardLayout() {
         <div className="mx-4 mb-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-xs text-slate-600">
           <p className="font-black text-[10px] uppercase tracking-widest text-slate-400 mb-2">How Aegis Works</p>
           <ul className="space-y-1.5">
-            <li className="flex items-start gap-2"><span className="text-indigo-400 shrink-0 mt-0.5">▸</span>Victims send SOS, find shelters, get alerts.</li>
-            <li className="flex items-start gap-2"><span className="text-teal-400 shrink-0 mt-0.5">▸</span>Helpers coordinate resources and missions.</li>
-            <li className="flex items-start gap-2"><span className="text-violet-400 shrink-0 mt-0.5">▸</span>Authorities manage alerts and analytics.</li>
+            <li className="flex items-start gap-2"><span className="text-indigo-400 shrink-0 mt-0.5">â–¸</span>Victims send SOS, find shelters, get alerts.</li>
+            <li className="flex items-start gap-2"><span className="text-teal-400 shrink-0 mt-0.5">â–¸</span>Helpers coordinate resources and missions.</li>
+            <li className="flex items-start gap-2"><span className="text-violet-400 shrink-0 mt-0.5">â–¸</span>Authorities manage alerts and analytics.</li>
           </ul>
         </div>
 
@@ -174,7 +175,7 @@ export default function DashboardLayout() {
         </div>
       </aside>
 
-      {/* ── MOBILE SIDEBAR DRAWER ── */}
+      {/* â”€â”€ MOBILE SIDEBAR DRAWER â”€â”€ */}
       <AnimatePresence>
         {sidebarOpen && (
           <>
@@ -269,7 +270,7 @@ export default function DashboardLayout() {
         )}
       </AnimatePresence>
 
-      {/* ── MAIN CONTENT ── */}
+      {/* â”€â”€ MAIN CONTENT â”€â”€ */}
       <div className="lg:pl-72">
         {/* Top Header */}
         <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-md px-4 py-3 sm:px-6"
@@ -284,7 +285,7 @@ export default function DashboardLayout() {
               </button>
               <div className="hidden xs:block">
                 <p className="text-sm font-bold text-slate-900 leading-tight">Disaster response command workspace</p>
-                <p className="text-xs text-slate-500">Live operations · Secure session · {roleLabel}</p>
+                <p className="text-xs text-slate-500">Live operations Â· Secure session Â· {roleLabel}</p>
               </div>
               {/* Mobile title */}
               <p className="text-sm font-bold text-slate-900 xs:hidden">AEGIS</p>
@@ -361,7 +362,7 @@ export default function DashboardLayout() {
         </main>
       </div>
 
-      {/* ── MOBILE BOTTOM NAV ── */}
+      {/* â”€â”€ MOBILE BOTTOM NAV â”€â”€ */}
       <nav className="bottom-nav lg:hidden">
         <div className="flex items-center justify-around px-2 pt-2" style={{ paddingBottom: 'max(0.5rem, var(--safe-bottom))' }}>
           {bottomLinks.map(({ icon: Icon, label, to }) => (
@@ -393,3 +394,4 @@ export default function DashboardLayout() {
     </div>
   );
 }
+

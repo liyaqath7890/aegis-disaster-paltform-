@@ -1,18 +1,34 @@
-import { httpClient } from '../api/httpClient';
+﻿import { httpClient } from '../api/httpClient';
 
 export const operationsService = {
-  listShelters: () => httpClient.get('/shelters'),
+  listShelters: (params) => httpClient.get('/shelters', { params }),
   createShelter: (payload) => httpClient.post('/shelters', payload),
-  listResources: () => httpClient.get('/resources'),
+  updateShelter: (id, payload) => httpClient.patch(`/shelters/${id}`, payload),
+  deleteShelter: (id) => httpClient.delete(`/shelters/${id}`),
+  listResources: (params) => httpClient.get('/resources', { params }),
   createResource: (payload) => httpClient.post('/resources', payload),
-  listMissingPersons: () => httpClient.get('/missing-persons'),
+  updateResource: (id, payload) => httpClient.patch(`/resources/${id}`, payload),
+  deleteResource: (id) => httpClient.delete(`/resources/${id}`),
+  listMissingPersons: (params) => httpClient.get('/missing-persons', { params }),
   createMissingPerson: (payload) => httpClient.post('/missing-persons', payload),
+  updateMissingPerson: (id, payload) => httpClient.patch(`/missing-persons/${id}`, payload),
+  deleteMissingPerson: (id) => httpClient.delete(`/missing-persons/${id}`),
   updateMissingPersonStatus: (id, status) => httpClient.patch(`/missing-persons/${id}/status`, { status }),
   listAlerts: () => httpClient.get('/alerts'),
   publishAlert: (payload) => httpClient.post('/alerts', payload),
+  deleteAlert: (id) => httpClient.delete(`/alerts/${id}`),
+  getReport: (params) => httpClient.get('/reports', { params }),
+  exportReport: (format, params) => httpClient.get(`/reports/export/${format}`, { params, responseType: 'blob' }),
+  listNotifications: () => httpClient.get('/notifications'),
+  markNotificationRead: (id) => httpClient.patch(`/notifications/${id}/read`),
+  deleteNotification: (id) => httpClient.delete(`/notifications/${id}`),
+  saveNotificationPreferences: (payload) => httpClient.patch('/notifications/preferences', payload),
+  broadcastNotification: (payload) => httpClient.post('/notifications/broadcast', payload),
   getAnalytics: () => httpClient.get('/analytics'),
   getAiPrediction: () => httpClient.get('/ai/predictions'),
   detectPanic: (payload) => httpClient.post('/ai/panic-detection', payload),
   getDroneMission: () => httpClient.get('/drone'),
-  uploadFile: (formData) => httpClient.post('/uploads/single', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+  listUploads: () => httpClient.get('/uploads'),
+  uploadFile: (formData, onUploadProgress) => httpClient.post('/uploads/single', formData, { headers: { 'Content-Type': 'multipart/form-data' }, onUploadProgress }),
+  deleteUpload: (id) => httpClient.delete(`/uploads/${id}`)
 };

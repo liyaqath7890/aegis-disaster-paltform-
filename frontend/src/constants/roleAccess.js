@@ -1,4 +1,4 @@
-import { ROLES } from './roles';
+﻿import { ROLES } from './roles';
 import { ROUTES } from './routes';
 
 export const ROLE_LABELS = {
@@ -29,6 +29,7 @@ export const ROUTE_ACCESS = {
   [ROUTES.AI]: ROLE_GROUPS.COMMAND,
   [ROUTES.DRONE]: ROLE_GROUPS.COMMAND,
   [ROUTES.UPLOADS]: ROLE_GROUPS.FIELD,
+  [ROUTES.REPORTS]: ROLE_GROUPS.COMMAND,
 };
 
 export function normalizeRole(role) {
@@ -39,3 +40,4 @@ export function canAccessRoute(role, route) {
   const allowedRoles = ROUTE_ACCESS[route];
   return !allowedRoles || allowedRoles.includes(normalizeRole(role));
 }
+
