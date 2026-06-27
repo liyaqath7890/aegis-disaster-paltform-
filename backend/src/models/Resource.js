@@ -1,4 +1,4 @@
-import { DataTypes } from 'sequelize';
+﻿import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/sequelize.js';
 
 export const Resource = sequelize.define(
@@ -14,7 +14,7 @@ export const Resource = sequelize.define(
       allowNull: false
     },
     category: {
-      type: DataTypes.ENUM('food', 'water', 'medical', 'equipment', 'transport', 'other'),
+      type: DataTypes.ENUM('food', 'water', 'medical', 'equipment', 'transport', 'vehicle', 'other'),
       defaultValue: 'other'
     },
     quantity: {
@@ -24,8 +24,17 @@ export const Resource = sequelize.define(
     unit: DataTypes.STRING(40),
     location: DataTypes.JSONB,
     status: {
-      type: DataTypes.ENUM('available', 'reserved', 'deployed'),
+      type: DataTypes.ENUM('available', 'reserved', 'deployed', 'depleted'),
       defaultValue: 'available'
+    },
+    assignedTo: DataTypes.STRING(160),
+    assignment: {
+      type: DataTypes.JSONB,
+      defaultValue: {}
+    },
+    metadata: {
+      type: DataTypes.JSONB,
+      defaultValue: {}
     }
   },
   {

@@ -1,4 +1,4 @@
-import { SOCKET_EVENTS } from './socketEvents.js';
+﻿import { SOCKET_EVENTS } from './socketEvents.js';
 
 let socketServer = null;
 
@@ -12,6 +12,30 @@ export function emitSosCreated(incident) {
 
 export function emitAlertBroadcast(alert) {
   socketServer?.emit(SOCKET_EVENTS.ALERT_BROADCAST, alert);
+}
+
+export function emitAlertDeleted(id) {
+  socketServer?.emit(SOCKET_EVENTS.ALERT_DELETED, { id });
+}
+
+export function emitResourceChanged(action, resource) {
+  socketServer?.emit(SOCKET_EVENTS.RESOURCE_CHANGED, { action, resource });
+}
+
+export function emitShelterChanged(action, shelter) {
+  socketServer?.emit(SOCKET_EVENTS.SHELTER_CHANGED, { action, shelter });
+}
+
+export function emitMissingPersonChanged(action, person) {
+  socketServer?.emit(SOCKET_EVENTS.MISSING_PERSON_CHANGED, { action, person });
+}
+
+export function emitNotificationCreated(notification) {
+  socketServer?.emit(SOCKET_EVENTS.NOTIFICATION_CREATED, notification);
+}
+
+export function emitNotificationChanged(action, notification) {
+  socketServer?.emit(SOCKET_EVENTS.NOTIFICATION_CHANGED, { action, notification });
 }
 
 export function emitTrackingUpdate(payload) {

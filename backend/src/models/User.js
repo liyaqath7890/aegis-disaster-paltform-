@@ -1,4 +1,4 @@
-import { DataTypes } from 'sequelize';
+﻿import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/sequelize.js';
 
 export const User = sequelize.define(
@@ -41,6 +41,10 @@ export const User = sequelize.define(
     isAvailable: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
+    },
+    metadata: {
+      type: DataTypes.JSONB,
+      defaultValue: {}
     }
   },
   {
@@ -48,3 +52,4 @@ export const User = sequelize.define(
     underscored: true
   }
 );
+

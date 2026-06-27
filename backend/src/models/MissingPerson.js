@@ -1,4 +1,4 @@
-import { DataTypes } from 'sequelize';
+﻿import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/sequelize.js';
 
 export const MissingPerson = sequelize.define(
@@ -21,6 +21,26 @@ export const MissingPerson = sequelize.define(
     status: {
       type: DataTypes.ENUM('missing', 'sighted', 'found'),
       defaultValue: 'missing'
+    },
+    familyContact: {
+      type: DataTypes.JSONB,
+      defaultValue: {}
+    },
+    lastSeenHistory: {
+      type: DataTypes.JSONB,
+      defaultValue: []
+    },
+    timeline: {
+      type: DataTypes.JSONB,
+      defaultValue: []
+    },
+    notes: {
+      type: DataTypes.JSONB,
+      defaultValue: []
+    },
+    metadata: {
+      type: DataTypes.JSONB,
+      defaultValue: {}
     }
   },
   {

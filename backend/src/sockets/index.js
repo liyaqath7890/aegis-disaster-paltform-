@@ -1,4 +1,4 @@
-import { verifyAccessToken } from '../helpers/token.js';
+﻿import { verifyAccessToken } from '../helpers/token.js';
 import { createChatMessage } from '../services/chat.service.js';
 import { SOCKET_EVENTS } from './socketEvents.js';
 import { setSocketServer } from './emitters.js';
@@ -74,6 +74,26 @@ export function registerSocketHandlers(io) {
     socket.on(SOCKET_EVENTS.TRACKING_UPDATE, (payload) => {
       socket.broadcast.emit(SOCKET_EVENTS.TRACKING_UPDATE, payload);
     });
+    socket.on(SOCKET_EVENTS.CHAT_READ_RECEIPT, (payload) => {
+      if (!payload?.roomId) return;
+      socket.to(payload.roomId).emit(SOCKET_EVENTS.CHAT_READ_RECEIPT, {
+        ...payload,
+        readBy: socket.user?.sub,
+        readAt: new Date().toISOString()
+      });
+    });
+
+    socket.on(SOCKET_EVENTS.ASSIGNMENT_CHANGED, (payload) => {
+      socket.broadcast.emit(SOCKET_EVENTS.ASSIGNMENT_CHANGED, {
+        ...payload,
+        updatedBy: socket.user?.sub,
+        updatedAt: new Date().toISOString()
+      });
+    });
+
+    socket.on(SOCKET_EVENTS.OFFLINE_QUEUE_FLUSH, (payload, callback) => {
+      callback?.({ ok: true, acceptedAt: new Date().toISOString(), count: payload?.events?.length || 0 });
+    });
 
     socket.on('disconnect', () => {
       for (const roomId of socket.joinedChatRooms) {
@@ -108,3 +128,4 @@ function emitRoomUsers(io, roomId) {
   const users = Array.from(roomUsers.get(roomId)?.values() || []);
   io.to(roomId).emit(SOCKET_EVENTS.CHAT_ROOM_USERS, { roomId, users });
 }
+
