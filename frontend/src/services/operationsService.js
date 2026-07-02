@@ -1,4 +1,4 @@
-﻿import { httpClient } from '../api/httpClient';
+import { httpClient } from '../api/httpClient';
 
 export const operationsService = {
   listShelters: (params) => httpClient.get('/shelters', { params }),
@@ -28,6 +28,8 @@ export const operationsService = {
   getAiPrediction: () => httpClient.get('/ai/predictions'),
   detectPanic: (payload) => httpClient.post('/ai/panic-detection', payload),
   getDroneMission: () => httpClient.get('/drone'),
+  launchDroneMission: (payload) => httpClient.post('/drone/launch', payload),
+  stopDroneMission: () => httpClient.post('/drone/stop'),
   listUploads: () => httpClient.get('/uploads'),
   uploadFile: (formData, onUploadProgress) => httpClient.post('/uploads/single', formData, { headers: { 'Content-Type': 'multipart/form-data' }, onUploadProgress }),
   deleteUpload: (id) => httpClient.delete(`/uploads/${id}`)

@@ -4,11 +4,9 @@ function trimTrailingSlash(value) {
   return value ? value.replace(/\/+$/, '') : value;
 }
 
-const defaultBaseUrl =
-  trimTrailingSlash(import.meta.env.VITE_API_BASE_URL) ||
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:5000/api/v1'
-    : `${trimTrailingSlash(window.location.origin)}/api/v1`);
+const defaultBaseUrl = import.meta.env.DEV
+  ? 'http://localhost:5000/api/v1'
+  : (trimTrailingSlash(import.meta.env.VITE_API_BASE_URL) || `${trimTrailingSlash(window.location.origin)}/api/v1`);
 
 export const httpClient = axios.create({
   baseURL: defaultBaseUrl,

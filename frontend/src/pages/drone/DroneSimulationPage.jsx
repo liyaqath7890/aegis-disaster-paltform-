@@ -23,6 +23,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import PageHeader from '../../components/common/PageHeader';
 import StatCard from '../../components/common/StatCard';
+import { useSocket } from '../../hooks/useSocket';
+import { operationsService } from '../../services/operationsService';
 
 // Fix for Leaflet marker icons in React
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -144,7 +146,20 @@ const DroneSimulationPage = () => {
   const [zoom, setZoom] = useState(16);
   const [isSearching, setIsSearching] = useState(false);
   
-  const timerRef = useRef(null);
+  useSocket('DRONE_TELEMETRY', (m) => {
+    setStatus(m.status);
+    setAltitude(m.altitude);
+    setSpeed(m.speed);
+    setBattery(m.battery);
+    setDronePos(m.currentPos);
+    
+    // Add logs based on status
+    if (m.status !== status && m.status !== 'Standby') {
+      addLog(`Status changed to: ${m.status}`);
+      if (m.status === 'Launching') setZoom(MAX_MAP_ZOOM);
+      if (m.status === 'RTL') setZoom(14);
+    }
+  });
 
   const zoomIn = () => {
     setZoom((currentZoom) => Math.min(MAX_MAP_ZOOM, currentZoom + 1));
@@ -266,75 +281,31 @@ const DroneSimulationPage = () => {
     }
   };
 
-  const handleLaunch = () => {
-    if (status !== 'Standby') return;
-    setStatus('Launching');
-    setZoom(MAX_MAP_ZOOM); // Closest reliable satellite mission detail
-    addLog('Initiating launch sequence...');
-    
-    timerRef.current = setInterval(() => {
-      setAltitude(prev => {
-        if (prev >= 120) {
-          clearInterval(timerRef.current);
-          setStatus('Surveying');
-          addLog('Target altitude reached. Commencing high-res recon.');
-          startSurvey();
-          return 120;
-        }
-        return prev + 5;
-      });
-      setBattery(prev => Math.max(0, prev - 0.05));
-    }, 100);
+  const handleLaunch = async () => {
+    if (status !== 'Standby' && status !== 'Landed') return;
+    try {
+      await operationsService.launchDroneMission({ origin: currentPos });
+      addLog('Mission launch requested from Command Center.');
+    } catch (e) {
+      addLog('Failed to launch mission: ' + e.message);
+    }
   };
 
-  const startSurvey = () => {
-    let step = 0;
-    timerRef.current = setInterval(() => {
-      if (step >= 20) {
-        clearInterval(timerRef.current);
-        setStatus('RTL');
-        addLog('Mission complete. Returning to launch.');
-        handleRTL();
-        return;
-      }
-      
-      setDronePos(prev => [prev[0] + 0.0002, prev[1] + 0.0002]);
-      setSpeed(45 + Math.random() * 5);
-      setDistance(prev => prev + 0.05);
-      setBattery(prev => Math.max(0, prev - 0.2));
-      
-      if (step % 5 === 0) {
-        const wpIdx = Math.floor(step / 5) + 1;
-        setActiveWaypoint(wpIdx);
-        addLog(`Executing: ${waypoints[wpIdx]?.action || 'Final Approach'}`);
-      }
-      
-      step++;
-    }, 2000);
-  };
-
-  const handleRTL = () => {
-    setZoom(14);
-    addLog('Landing sequence initiated...');
-    setTimeout(() => {
-      setStatus('Landed');
-      setSpeed(0);
+  const handleReset = async () => {
+    try {
+      await operationsService.stopDroneMission();
+      setStatus('Standby');
+      setBattery(100);
       setAltitude(0);
-      addLog('Drone landed safely.');
-    }, 5000);
-  };
-
-  const handleReset = () => {
-    clearInterval(timerRef.current);
-    setStatus('Standby');
-    setBattery(100);
-    setAltitude(0);
-    setSpeed(0);
-    setDistance(0);
-    setActiveWaypoint(0);
-    setDronePos(currentPos);
-    setZoom(17);
-    setLogs(['[SYSTEM] Ready for new mission at target location.']);
+      setSpeed(0);
+      setDistance(0);
+      setActiveWaypoint(0);
+      setDronePos(currentPos);
+      setZoom(17);
+      setLogs(['[SYSTEM] Ready for new mission at target location.']);
+    } catch (e) {
+      addLog('Failed to reset mission.');
+    }
   };
 
   return (

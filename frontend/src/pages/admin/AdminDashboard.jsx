@@ -53,13 +53,7 @@ const AdminDashboard = () => {
     { key: 'status', label: 'Status', render: (val) => <span className="text-xs font-semibold text-slate-600 italic">{val || 'Active Dispatch'}</span> }
   ];
 
-  const demoData = [
-    { id: 'INC-2094', disasterType: 'Flood', location: { address: 'Ward 8 Riverfront' }, severity: 'critical', status: 'In Progress', phone: '919876543210' },
-    { id: 'INC-2088', disasterType: 'Fire', location: { address: 'South Bypass Bridge' }, severity: 'high', status: 'Team Dispatched', phone: '919876543211' },
-    { id: 'INC-2082', disasterType: 'Earthquake', location: { address: 'Central High School' }, severity: 'critical', status: 'Awaiting Rescue', phone: '919876543212' },
-  ];
-
-  const tableData = incidents.length > 0 ? incidents : demoData;
+  const tableData = incidents;
 
   return (
     <div className="space-y-8">
