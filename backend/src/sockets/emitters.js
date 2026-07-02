@@ -1,9 +1,13 @@
-﻿import { SOCKET_EVENTS } from './socketEvents.js';
+import { SOCKET_EVENTS } from './socketEvents.js';
 
 let socketServer = null;
 
 export function setSocketServer(io) {
   socketServer = io;
+}
+
+export function getSocketServer() {
+  return socketServer;
 }
 
 export function emitSosCreated(incident) {

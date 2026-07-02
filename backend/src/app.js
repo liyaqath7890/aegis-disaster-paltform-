@@ -13,7 +13,17 @@ import { securityHeaders } from './middleware/securityHeaders.js';
 export const app = express();
 
 app.set('trust proxy', 1);
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
 app.use(securityHeaders);
 const allowedOrigins = [
   ...(Array.isArray(env.clientOrigin) ? env.clientOrigin : [env.clientOrigin]),
@@ -24,10 +34,12 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests) only in non-production, 
+      // but in production we might still want it based on architecture. Assuming web client mostly.
       if (!origin) {
         return callback(null, true);
       }
-      if (env.allowAnyOrigin || allowedOrigins.includes(origin)) {
+      if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       callback(new Error(`CORS policy blocked origin: ${origin}`));
